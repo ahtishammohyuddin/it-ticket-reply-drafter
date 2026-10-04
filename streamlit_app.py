@@ -78,7 +78,7 @@ PRIO_COLOR = {"P1": "#B42318", "P2": "#C2410C", "P3": "#1F5FBF", "P4": "#5B6B7D"
 
 st.markdown("""
 <style>
-.block-container{max-width:1320px;padding-top:1.4rem;padding-bottom:2rem}
+.block-container{max-width:1320px;padding-top:3.5rem;padding-bottom:2rem}
 .stAppDeployButton{display:none}
 .hdr{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;
      padding:4px 0 18px;margin-bottom:6px;border-bottom:1px solid #D9DEE6}
