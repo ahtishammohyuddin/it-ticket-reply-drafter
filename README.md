@@ -4,6 +4,8 @@ Drafts safe replies to IT support tickets, grounded in the company's own help ar
 
 Built for first-line service desks: the agent pastes a ticket and gets a category, a priority, an escalation check and three reply drafts. Every draft is checked against safety rules before the agent can copy it. Nothing is ever sent automatically.
 
+**Live demo:** _add your Streamlit link here_
+
 ![Screenshot](docs/screenshot.png)
 
 ## What it does
@@ -45,7 +47,7 @@ flowchart LR
 - **Model:** Gemini (free tier) with a JSON response schema, low temperature, retry on rate limits
 - **Retrieval:** scikit-learn TF-IDF (free, local) or Gemini embeddings with an on-disk cache
 - **Offline mode:** with no API key, a rules-and-templates drafter keeps the app, the tests and the evaluation working
-- **Front end:** one HTML page, no build step, light and dark themes, works on mobile
+- **Front end:** one HTML page served by FastAPI (no build step, light and dark themes, works on mobile), plus `streamlit_app.py` for the free hosted demo. Both call the same pipeline.
 - **Quality:** pytest suite (including the Gemini path with a mocked client), evaluation script, GitHub Actions CI, Docker
 
 ## Run it locally
@@ -115,7 +117,8 @@ app/          FastAPI app, pipeline, redaction, guardrails, retrieval, drafters
 data/kb/      Help articles, one Markdown file each (fictional company)
 data/eval/    30 made-up tickets with expected answers
 eval/         Evaluation script and latest results
-static/       The agent console (single HTML file)
+static/       The agent console for the FastAPI service (single HTML file)
+streamlit_app.py  Front end for the free hosted demo, same pipeline
 tests/        pytest suite
 docs/         Deployment guide
 ```
@@ -126,7 +129,7 @@ Free to build, run and host:
 
 - Gemini free tier (`gemini-3.5-flash-lite`) for drafting, no billing account needed
 - TF-IDF retrieval runs locally and uses no API calls
-- Hosting on Hugging Face Spaces free CPU (see [docs/DEPLOY.md](docs/DEPLOY.md))
+- Live demo hosted on Streamlit Community Cloud for free (see [docs/DEPLOY.md](docs/DEPLOY.md))
 - The demo limits each visitor to a few drafts per minute to protect the free quota
 
 On the free tier, Google may use prompts to improve its models. Only use made-up tickets, never real customer data. A real deployment would use a paid tier or a self-hosted model.
