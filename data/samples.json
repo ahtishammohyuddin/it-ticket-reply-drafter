@@ -1,0 +1,38 @@
+[
+  {
+    "label": "Forgot my password",
+    "subject": "Forgot my password",
+    "body": "Hi, I came back from leave and can't remember my password. I can't sign in to anything.",
+    "customer_name": "Sara Khan"
+  },
+  {
+    "label": "VPN error 809",
+    "subject": "VPN error 809",
+    "body": "Working from home today and the VPN gives error 809. Internet works fine otherwise.",
+    "customer_name": "Bilal Ahmed"
+  },
+  {
+    "label": "Outlook not getting emails",
+    "subject": "Outlook not getting emails",
+    "body": "Outlook stopped getting new emails since this morning but I can send. Colleagues say they emailed me.",
+    "customer_name": "Faisal Iqbal"
+  },
+  {
+    "label": "Clicked a link",
+    "subject": "Clicked a link",
+    "body": "I clicked a link in an email about a parcel delivery and entered my login details before I realised. What do I do?",
+    "customer_name": "Asad Hussain"
+  },
+  {
+    "label": "Access to Finance shared folder",
+    "subject": "Access to Finance shared folder",
+    "body": "I've joined the finance team and need edit access to the Finance Reports shared folder. My manager is Ahmed Shah.",
+    "customer_name": "Saad Qureshi"
+  },
+  {
+    "label": "Password in ticket",
+    "subject": "Password in ticket",
+    "body": "Can't log in. My password is Karachi@2026 and it says incorrect. Please check.",
+    "customer_name": "Junaid Akhtar"
+  }
+]

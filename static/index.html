@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IT Ticket Reply Drafter</title>
+<meta name="description" content="Drafts safe, knowledge-base-grounded replies to IT support tickets for a human agent to review.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f5f8; --panel:#fff; --sunk:#eef1f5; --line:#d9dee6; --ink:#17202b; --ink2:#4d5a6a; --ink3:#7b8796;
+  --blue:#1f5fbf; --blue-ink:#fff; --ok:#1b7f4b; --warn:#a15c00; --bad:#b42318;
+  --p1:#b42318; --p2:#c2410c; --p3:#1f5fbf; --p4:#5b6b7d;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0f141b;--panel:#161d26;--sunk:#1c2530;--line:#2b3644;--ink:#e6ebf1;--ink2:#a7b3c2;--ink3:#7d8a9a;
+    --blue:#5b9bff;--blue-ink:#0b1220;--ok:#4cc38a;--warn:#e7a03c;--bad:#ff7b72;--p1:#ff7b72;--p2:#ff9e5e;--p3:#5b9bff;--p4:#9aa8b8}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+button,textarea,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:16px;font-weight:600;margin:0}
+header p{margin:0;font-size:13px;color:var(--ink3)}
+.status{font-family:var(--mono);font-size:12px;color:var(--ink2);border:1px solid var(--line);border-radius:6px;padding:4px 10px;white-space:nowrap}
+.status b{font-weight:500;color:var(--ink)}
+main{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:20px;padding:20px 24px;max-width:1400px;margin:0 auto}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.pad{padding:18px}
+h2{font-size:14px;font-weight:600;margin:0 0 12px}
+label{display:block;font-size:13px;font-weight:500;color:var(--ink2);margin:14px 0 6px}
+input,textarea{width:100%;background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:9px 11px}
+textarea{resize:vertical}
+#body{min-height:190px}
+.samples{display:flex;flex-wrap:wrap;gap:6px}
+.samples button{border:1px solid var(--line);background:none;border-radius:999px;padding:4px 11px;font-size:13px;color:var(--ink2);cursor:pointer}
+.samples button:hover{border-color:var(--blue);color:var(--ink)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px}
+.count{font-size:12px;color:var(--ink3);font-family:var(--mono)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:8px 14px;font-weight:500;cursor:pointer}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.hint{font-size:12px;color:var(--ink3);margin-top:10px}
+/* results */
+.empty{display:flex;flex-direction:column;justify-content:center;min-height:420px;padding:32px;color:var(--ink2)}
+.empty h2{font-size:18px;margin-bottom:8px;color:var(--ink)}
+.empty ol{margin:8px 0 0;padding-left:20px}
+.err{border:1px solid var(--bad);color:var(--bad);border-radius:8px;padding:12px 14px;margin-bottom:14px;background:color-mix(in srgb,var(--bad) 7%,transparent)}
+.triage{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.kv{font-size:13px;color:var(--ink3)}
+.kv b{display:block;font-size:15px;font-weight:600;color:var(--ink)}
+.prio{font-family:var(--mono);font-weight:500;border-radius:5px;padding:1px 8px;color:#fff}
+.summary{flex:1 1 260px;font-size:14px;color:var(--ink2)}
+.esc{margin:14px 18px 0;border-left:3px solid var(--p1);background:color-mix(in srgb,var(--p1) 8%,transparent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px}
+.esc b{color:var(--p1)}
+.grid{display:grid;grid-template-columns:1fr 300px;gap:0}
+.drafts{padding:16px 18px;border-right:1px solid var(--line);min-width:0}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;margin-bottom:-1px;cursor:pointer;color:var(--ink2);font-weight:500}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blue)}
+.tabs .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--bad);margin-left:6px;vertical-align:1px}
+.subj{font-size:13px;color:var(--ink3);margin-bottom:6px}
+.subj span{color:var(--ink);font-weight:500}
+.reply{min-height:260px;font-size:14.5px;line-height:1.6;background:var(--panel)}
+.flags{margin:10px 0 0;padding:0;list-style:none;font-size:13px}
+.flags li{padding:6px 10px;border-radius:6px;margin-top:6px}
+.flags li.bad{background:color-mix(in srgb,var(--bad) 9%,transparent);color:var(--bad)}
+.flags li.note{background:var(--sunk);color:var(--ink2)}
+.cites{font-size:13px;color:var(--ink3);margin-top:10px}
+.actions{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.approved{font-size:13px;color:var(--ok);font-weight:500}
+.side{padding:16px 18px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.side h3{font-size:13px;font-weight:600;margin:0 0 8px;color:var(--ink2)}
+.redacted{font-family:var(--mono);font-size:12px;background:var(--sunk);border-radius:6px;padding:10px;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow:auto;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:5px;padding:1px 7px;color:var(--ink2)}
+.art{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px;padding:8px 0;border-top:1px solid var(--line)}
+.art:first-of-type{border-top:0}
+.art code{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.bar{grid-column:2;height:4px;background:var(--sunk);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--blue)}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--ink3);line-height:1.8}
+.loading{opacity:.55;pointer-events:none}
+footer{max-width:1400px;margin:0 auto;padding:0 24px 24px;font-size:12.5px;color:var(--ink3)}
+@media (max-width:1100px){.grid{grid-template-columns:1fr}.drafts{border-right:0;border-bottom:1px solid var(--line)}}
+@media (max-width:820px){main{grid-template-columns:1fr;padding:14px}header{padding:12px 14px;flex-wrap:wrap}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>IT Ticket Reply Drafter</h1>
+    <p>Draft replies from your knowledge base. A person reviews and sends every one.</p>
+  </div>
+  <span class="status" id="status">Connecting…</span>
+</header>
+
+<main>
+  <section class="pane pad" aria-labelledby="t-head">
+    <h2 id="t-head">Ticket</h2>
+    <div class="samples" id="samples" aria-label="Example tickets"></div>
+    <form id="form" novalidate>
+      <label for="name">Customer name <span style="color:var(--ink3);font-weight:400">(optional)</span></label>
+      <input id="name" maxlength="80" autocomplete="off">
+      <label for="subject">Subject</label>
+      <input id="subject" maxlength="200" required autocomplete="off">
+      <label for="body">Message</label>
+      <textarea id="body" maxlength="4000" required></textarea>
+      <div class="row">
+        <span class="count" id="count">0 / 4000</span>
+        <button class="btn primary" id="go" type="submit">Draft replies</button>
+      </div>
+      <p class="hint">Ctrl + Enter also drafts. Emails, phone numbers, card numbers, IP addresses and passwords are removed before anything reaches the model.</p>
+    </form>
+  </section>
+
+  <section class="pane" id="out" aria-live="polite">
+    <div class="empty">
+      <h2>Drafts appear here</h2>
+      <p>Pick an example ticket or paste one. You will get:</p>
+      <ol>
+        <li>A category, a priority and an escalation check</li>
+        <li>Three reply drafts based on your help articles</li>
+        <li>A warning on any draft that breaks a safety rule</li>
+      </ol>
+    </div>
+  </section>
+</main>
+<footer>Use made-up tickets only. Nothing is sent from this page: copy a reply into your ticketing tool when you are happy with it.</footer>
+
+<template id="tpl">
+  <div id="errBox"></div>
+  <div class="triage">
+    <div class="kv">Category<b data-f="category"></b></div>
+    <div class="kv">Priority<b><span class="prio" data-f="priority"></span></b></div>
+    <div class="summary" data-f="summary"></div>
+  </div>
+  <div data-f="esc"></div>
+  <div class="grid">
+    <div class="drafts">
+      <div class="tabs" role="tablist" data-f="tabs"></div>
+      <div data-f="panel"></div>
+    </div>
+    <aside class="side">
+      <div><h3>What the model saw</h3><pre class="redacted" data-f="redacted"></pre><div class="chips" data-f="redactions"></div></div>
+      <div><h3>Help articles used</h3><div data-f="articles"></div></div>
+      <div><h3>Run details</h3><div class="meta" data-f="meta"></div></div>
+    </aside>
+  </div>
+</template>
+
+<script>
+const $ = s => document.querySelector(s);
+const CAT = {password_login:"Password and sign-in", access_request:"Access request", email:"Email", network_vpn:"Network and VPN",
+  hardware:"Hardware", software:"Software", security:"Security", other:"Other"};
+const PRIO = {P1:["P1","var(--p1)"],P2:["P2","var(--p2)"],P3:["P3","var(--p3)"],P4:["P4","var(--p4)"]};
+const REASON = {possible_security_incident:"Possible security incident", possible_outage:"Possible outage affecting several people",
+  possible_data_loss:"Possible data loss", credentials_shared_in_ticket:"The customer shared a password in the ticket",
+  urgent_language:"Urgent language"};
+const FLAG = {asks_for_a_secret:"Asks the customer for a password or code. Rewrite before sending.",
+  makes_a_promise:"Promises a timeline, refund or outcome. Remove the promise before sending.",
+  contains_personal_data:"Contains personal data. Remove it before sending.",
+  no_article_cited:"Not based on a help article. Check the steps are correct."};
+const TONE = {concise:"Concise", detailed:"Detailed", escalation:"Escalation"};
+const human = f => f.startsWith("cites_unknown_article") ? "Mentions an article that does not exist: " + f.split(":")[1]
+  : f.startsWith("contains_personal_data:") ? "Contains personal data (" + f.split(":")[1].toLowerCase().replace(/,/g, ", ") + "). Remove it before sending."
+  : (FLAG[f] || f);
+const isBad = f => ["asks_for_a_secret","makes_a_promise"].includes(f) || f.startsWith("contains_personal_data");
+
+const form = $("#form"), go = $("#go"), out = $("#out");
+const fields = {name:$("#name"), subject:$("#subject"), body:$("#body")};
+fields.body.addEventListener("input", () => $("#count").textContent = fields.body.value.length + " / 4000");
+
+fetch("/api/health").then(r => r.json()).then(h => {
+  $("#status").innerHTML = h.provider === "offline"
+    ? "<b>Offline mode</b> · rules and templates, no AI"
+    : `<b>${h.model}</b> · ${h.retriever} retrieval · ${h.articles} articles`;
+}).catch(() => $("#status").textContent = "API not reachable");
+
+fetch("/api/samples").then(r => r.json()).then(list => list.forEach(s => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = s.label;
+  b.onclick = () => { fields.name.value = s.customer_name || ""; fields.subject.value = s.subject; fields.body.value = s.body;
+    fields.body.dispatchEvent(new Event("input")); fields.body.focus(); };
+  $("#samples").appendChild(b);
+}));
+
+document.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") form.requestSubmit(); });
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!fields.subject.value.trim() || fields.body.value.trim().length < 5) {
+    showError("Add a subject and a message of at least a few words."); return;
+  }
+  go.disabled = true; go.textContent = "Drafting…"; out.classList.add("loading");
+  try {
+    const r = await fetch("/api/draft", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({subject: fields.subject.value.trim(), body: fields.body.value.trim(),
+                            customer_name: fields.name.value.trim() || null})});
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof data.detail === "string" ? data.detail : "The ticket could not be processed. Check the fields and try again.");
+    render(data);
+  } catch (err) { showError(err.message); }
+  finally { go.disabled = false; go.textContent = "Draft replies"; out.classList.remove("loading"); }
+});
+
+function showError(msg) {
+  let box = out.querySelector("#errBox");
+  if (!box) { out.innerHTML = '<div class="pad"><div id="errBox"></div></div>'; box = out.querySelector("#errBox"); }
+  box.innerHTML = ""; const d = document.createElement("div"); d.className = "err"; d.textContent = msg; box.appendChild(d);
+}
+
+function render(d) {
+  out.innerHTML = ""; out.appendChild($("#tpl").content.cloneNode(true));
+  const f = k => out.querySelector(`[data-f="${k}"]`);
+  f("category").textContent = CAT[d.analysis.category] || d.analysis.category;
+  const [pl, pc] = PRIO[d.analysis.priority]; f("priority").textContent = pl; f("priority").style.background = pc;
+  f("summary").textContent = d.analysis.summary;
+  if (d.analysis.needs_escalation) {
+    const e = document.createElement("div"); e.className = "esc";
+    const reasons = d.analysis.escalation_reasons.map(x => REASON[x] || x).join("; ");
+    e.innerHTML = "<b>Escalate before replying.</b> "; e.append(reasons || "The model recommends a second line team.");
+    f("esc").appendChild(e);
+  }
+  // drafts
+  const tabs = f("tabs"), panel = f("panel");
+  d.drafts.forEach((dr, i) => {
+    const t = document.createElement("button"); t.type = "button"; t.role = "tab"; t.textContent = TONE[dr.tone] || dr.tone;
+    if (dr.blocked) { const dot = document.createElement("span"); dot.className = "dot"; dot.title = "Needs changes"; t.appendChild(dot); }
+    t.onclick = () => show(i); tabs.appendChild(t);
+  });
+  function show(i) {
+    [...tabs.children].forEach((t, j) => t.setAttribute("aria-selected", i === j));
+    const dr = d.drafts[i]; panel.innerHTML = "";
+    const s = document.createElement("div"); s.className = "subj"; s.innerHTML = "Subject: <span></span>"; s.querySelector("span").textContent = dr.subject;
+    const ta = document.createElement("textarea"); ta.className = "reply"; ta.value = dr.body; ta.setAttribute("aria-label", "Reply draft, editable");
+    ta.oninput = () => { dr.body = ta.value; };
+    panel.append(s, ta);
+    if (dr.flags.length) {
+      const ul = document.createElement("ul"); ul.className = "flags";
+      dr.flags.forEach(fl => { const li = document.createElement("li");
+        li.className = isBad(fl) ? "bad" : "note";
+        li.textContent = human(fl); ul.appendChild(li); });
+      panel.appendChild(ul);
+    }
+    if (dr.kb_ids.length) { const c = document.createElement("div"); c.className = "cites"; c.textContent = "Based on: " + dr.kb_ids.join(", "); panel.appendChild(c); }
+    const a = document.createElement("div"); a.className = "actions";
+    const copy = document.createElement("button"); copy.className = "btn primary"; copy.type = "button";
+    copy.textContent = dr.blocked ? "Fix the warnings to copy" : "Copy reply"; copy.disabled = dr.blocked;
+    const note = document.createElement("span"); note.className = "approved";
+    copy.onclick = async () => { try { await navigator.clipboard.writeText(dr.body); note.textContent = "Copied. Paste it into your ticketing tool."; }
+      catch { ta.select(); note.textContent = "Selected. Press Ctrl + C to copy."; } };
+    if (dr.blocked) {
+      const ov = document.createElement("button"); ov.className = "btn"; ov.type = "button"; ov.textContent = "Check my edits";
+      ov.onclick = async () => {
+        ov.disabled = true; ov.textContent = "Checking…";
+        try {
+          const r = await fetch("/api/check", {method:"POST", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({body: dr.body, kb_ids: dr.kb_ids, tone: dr.tone})});
+          const res = await r.json(); dr.flags = res.flags; dr.blocked = res.blocked;
+          const dot = tabs.children[i].querySelector(".dot"); if (!dr.blocked && dot) dot.remove();
+          show(i);
+        } catch { ov.disabled = false; ov.textContent = "Check my edits"; note.textContent = "Could not check. Try again."; }
+      };
+      a.append(copy, ov, note);
+    } else a.append(copy, note);
+    panel.appendChild(a);
+  }
+  show(0);
+  // side
+  f("redacted").textContent = d.redacted_ticket;
+  if (d.redactions.length) d.redactions.forEach(x => { const c = document.createElement("span"); c.className = "chip"; c.textContent = `${x.type} ×${x.count} removed`; f("redactions").appendChild(c); });
+  else { const c = document.createElement("span"); c.className = "chip"; c.textContent = "No personal data found"; f("redactions").appendChild(c); }
+  const arts = f("articles");
+  if (!d.kb_sources.length) arts.textContent = "No matching article. Drafts ask a clarifying question instead.";
+  const max = Math.max(...d.kb_sources.map(k => k.score), 0.01);
+  d.kb_sources.forEach(k => { const r = document.createElement("div"); r.className = "art";
+    r.innerHTML = `<code></code><span></span><div class="bar"><i style="width:${Math.round(k.score / max * 100)}%"></i></div>`;
+    r.querySelector("code").textContent = k.id; r.querySelector("span").textContent = k.title; arts.appendChild(r); });
+  f("meta").innerHTML = "";
+  [["provider", d.provider], ["model", d.model], ["time", d.latency_ms + " ms"], ["request", d.request_id]].forEach(([k, v]) => {
+    const l = document.createElement("div"); l.textContent = `${k}: ${v}`; f("meta").appendChild(l); });
+}
+</script>
+</body>
+</html>
