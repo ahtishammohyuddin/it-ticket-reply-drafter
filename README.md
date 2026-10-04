@@ -4,7 +4,7 @@ Drafts safe replies to IT support tickets, grounded in the company's own help ar
 
 Built for first-line service desks: the agent pastes a ticket and gets a category, a priority, an escalation check and three reply drafts. Every draft is checked against safety rules before the agent can copy it. Nothing is ever sent automatically.
 
-**Live demo:** _add your Streamlit link here_
+**Live demo:** _https://it-ticket-reply-drafter.streamlit.app_
 
 ![Screenshot](docs/screenshot.png)
 
